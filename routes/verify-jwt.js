@@ -15,7 +15,7 @@ module.exports = (req, res, next)=>{
             //console.log(decoded);
             const username = decoded.username
             
-            pool.query('SELECT id FROM user_credentials WHERE username = ?', [username.trim()], (error, results, fields)=>{
+            pool.query('SELECT id FROM user_credentials WHERE username = ? OR email = ?', [username.trim(), username.trim()], (error, results, fields)=>{
                 if(error || results.length <= 0 || results == undefined){
                     console.log("Unauthorize since no user")
                     return res.status(401).end()
