@@ -195,17 +195,17 @@ router.post('/post-personal-rating', (req, res)=>{
                         }else{
                             const post_id = results.insertId
                             
-                            if(public === '1'){
-                                pool.query('INSERT INTO public_rating (post_id) VALUES (?)',[post_id], (errors, results, fields)=>{
-                                    if(errors){
-                                        console.log(errors)
-                                        return res.json({
-                                            success: false,
-                                            err: errors
-                                        })
-                                    }
-                                })
-                            }
+                            // if(public === '1'){
+                            //     pool.query('INSERT INTO public_rating (post_id) VALUES (?)',[post_id], (errors, results, fields)=>{
+                            //         if(errors){
+                            //             console.log(errors)
+                            //             return res.json({
+                            //                 success: false,
+                            //                 err: errors
+                            //             })
+                            //         }
+                            //     })
+                            // }
                             return res.json({
                                 success: true,
                                 data: results,
@@ -270,19 +270,120 @@ router.get('/get-personal-rating', (req, res)=>{
 
 })
 router.get('/get-public-rating',(req, res)=>{
+    const token = req.headers.authorization.split(' ')[1]
+    const post_id =  req.headers.postid
+    return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded)=>{
+        if(err){
+            return res.status(401).end()
+        }
+        pool.query('SELECT * FROM public-rating WHERE post_id = ?', [post_id], (errors, results, fields)=>{
+            if(errors){
+                return res.json({
+                    success: false,
+                    err: errors
+                })
+            }
+            return res.json({
+                success: true,
+                err: null,
+                data: results
+            })
+        })
+    })
 
 })
 router.post('/post-friend-rating', (req, res)=>{
+    const token = req.headers.authorization.split(' ')[1]
+    const {post_id, rating, comment} = req.body
+    return jwt.verify(token, process.env.TOKEN_KEY, (err,decoded)=>{
+        if(err){
+            return res.status(401).end()
+        }
+        const user_id = decoded.id
+        pool.query('INSERT INTO public_rating (post_id,friend_id, friend_rating, comment) VALUES (?,?,?,?)', [post_id, user_id, rating, comment], (errors, results, fields)=>{
+            if(errors){
+                return res.json({
+                    success: false,
+                    err: errors
+                })
+            }
+            return res.json({
+                success: true,
+                err: null,
+                data: results
+            })
+        })
+    })
+})
+
+router.patch('/edit-friend-rating', (req, res)=>{
+    const token = req.headers.authorization.split(' ')[1]
+    const {post_id, rating, comment} = req.body
+    return jwt.verify(token, process.env.TOKEN_KEY, (err,decoded)=>{
+        if(err){
+            return res.status(401).end()
+        }
+        const user_id = decoded.id
+        pool.query('UPDATE public_rating SET friend_rating = ?, comment = ? WHERE post_id = ? AND friend_id = ?', [rating, comment, post_id, user_id], (errors, results, fields)=>{
+            if(errors){
+                return res.json({
+                    success: false,
+                    err: results
+                })
+            }
+            return res.json({
+                success: true,
+                err: null,
+                data: results
+            })
+        })
+    
+    })
 
 })
-router.post('/post-friend-comment', (req, res)=>{
-
-})
-router.patch('/edit-friend-comment', (req, res)=>{
-
-})
-router.get('/public-rating-list', (req, res)=>{
-
+router.get('/get-public-list', (req, res)=>{
+    const token = req.headers.authorization.split(' ')[1]
+    return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded)=>{
+        if(err){
+            return res.status(401).end()
+        }
+        const user_id = decoded.id
+        pool.query('SELECT friend_id FROM friendship WHERE user_id = ? AND status = 3', [user_id], (errors, results, fields)=>{
+            if(errors){
+                return res.json({
+                    success: false,
+                    err: results
+                })
+            }
+            if(results == undefined || results.length <= 0){
+                return res.json({
+                    success: false,
+                    err: "Connect to some friends to see thier day"
+                })
+            }
+            var tup = ""
+            for(var i=0;i<results.length-1; i++){
+                tup+=results[i].friend_id+","
+            }
+            tup += results[results.length-1].friend_id
+            console.log(tup)
+            pool.query('SELECT * FROM personal_rating WHERE user_id IN ('+tup+')', (errors, results, fields)=>{
+                if(errors){
+                    return res.json({
+                        success: false,
+                        err: results
+                    })
+                }
+                
+                return res.json({
+                    success: true,
+                    err: null,
+                    data: results
+                })
+            })
+            
+        })
+    })
 })
 //friend list
 // 0 = pending-sent
@@ -290,8 +391,6 @@ router.get('/public-rating-list', (req, res)=>{
 // 2 = decline
 // 3 = accept
 //didnt test any of these
-
-
 
 router.get('/get-friend-list', (req, res)=>{
     const token = req.headers.authorization.split(' ')[1]
@@ -342,7 +441,16 @@ router.get('/get-pending-list', (req, res)=>{
 })
 router.get('/search-user', (req,res)=>{
     const query = req.headers.query;
-    pool.query("SELECT id, username FROM user_credentials WHERE username LIKE ? OR email LIKE ?", ['%'+query+'%','%'+query+'%'], (errors, results, fields)=>{
+    const name = query.split(' ');
+    var first, last
+    if(name.length > 1){
+        first = name[0]
+        last = name[1]
+    }else{
+        first = query
+        last = query
+    }
+    pool.query("SELECT user_credentials.id, user_credentials.username, user_info.firstname, user_info.lastname FROM user_credentials INNER JOIN user_info ON user_credentials.id = user_info.id WHERE user_credentials.username LIKE ? OR user_credentials.email LIKE ? OR user_info.firstname LIKE ? OR user_info.lastname LIKE ?", ['%'+query+'%','%'+query+'%','%'+first+'%','%'+last+'%' ], (errors, results, fields)=>{
         if(errors){
             console.log(errors)
             return res.json({
@@ -356,6 +464,30 @@ router.get('/search-user', (req,res)=>{
             data: results
         })
     })
+})
+router.get('/get-person-info', (req, res)=>{
+    const token = req.headers.authorization.split(' ')[1]
+    const person_id = req.headers.personid
+    return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded)=>{
+        if(err)
+            return res.status(401).end()
+        pool.query("SELECT user_credentials.id, user_credentials.username, user_info.firstname, user_info.lastname FROM user_credentials INNER JOIN user_info ON user_credentials.id = user_info.id WHERE user_credentials.id = ?", [person_id], (errors, results, fields)=>{
+            if(errors){
+                console.log(errors)
+                return res.json({
+                    success: false,
+                    err: errors
+                })
+            }
+            return res.json({
+                success: true,
+                err: null,
+                data: results
+            })
+        })
+        
+    })
+    
 })
 router.post('/friend-request', (req, res)=>{
     const token = req.headers.authorization.split(' ')[1]
@@ -472,7 +604,7 @@ router.delete('/remove-friend', (req, res)=>{
             return res.json({
                 success: true,
                 err: null,
-                data: "You have sucessfully removed this person "
+                data: "You have sucessfully removed this person"
             })
         })
     })
