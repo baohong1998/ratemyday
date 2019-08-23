@@ -6,11 +6,14 @@ import {createStackNavigator, createAppContainer} from 'react-navigation'
 import { Input } from 'react-native-elements';
 import moment from 'moment'
 export default class SettingPage extends Component{
+    toLogout = ()=>{
+        this.props.navigation.navigate('Logout')
+    }
     render(){
         return(
             <React.Fragment>
                 <View style={styles.container}>
-                    <Text>Settings</Text>
+                    <Button onPress={this.toLogout} title="Log out" buttonStyle={styles.homeButton}/>
                 </View>
             </React.Fragment>
         )

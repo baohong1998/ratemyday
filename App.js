@@ -33,6 +33,10 @@ export default class App extends Component {
 //   },
 //   UserPass: SubmitSignup
 // })
+const LogoutNavigator = createSwitchNavigator({
+  
+  Home: HomeScreen
+})
 const PageNavigator = createBottomTabNavigator({
   Personal: {
     screen: PersonalPage,
@@ -96,6 +100,7 @@ const AppNavigator = createSwitchNavigator({
  
   Auth: AuthNavigator,
   App: PageNavigator,
+  Logout: LogoutNavigator
   
 })
 
