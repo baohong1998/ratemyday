@@ -116,8 +116,8 @@ export default StyleSheet.create({
     margin: 10,
     marginTop: 15,
     justifyContent: "center",
-    alignItems: "center",
-
+    alignItems: "flex-start",
+    borderRadius: 5,
     padding: 10,
     width: "auto",
     backgroundColor: "#fff",

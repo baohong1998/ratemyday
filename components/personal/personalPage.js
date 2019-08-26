@@ -39,6 +39,19 @@ export default class PersonalPage extends Component {
     };
     this.inputKeyboard = React.createRef();
   }
+  shouldComponentUpdate(nextProps, nextState) {
+    const { rating, comment, isPublic } = nextState;
+    if (
+      rating !== this.state.rating ||
+      comment !== this.state.comment ||
+      isPublic !== this.state.isPublic
+    ) {
+      this.setState({
+        notEditing: false
+      });
+    }
+    return true;
+  }
 
   componentDidMount() {
     this.setState({
@@ -47,8 +60,7 @@ export default class PersonalPage extends Component {
   }
   setRate = x => {
     this.setState({
-      rating: x,
-      notEditing: false
+      rating: x
     });
   };
   setPos = x => {
@@ -188,9 +200,7 @@ export default class PersonalPage extends Component {
           >
             <TextInput
               placeholder="Thoughts on the rating?"
-              onChangeText={value =>
-                this.setState({ comment: value, notEditing: false })
-              }
+              onChangeText={value => this.setState({ comment: value })}
               style={{ ...styles.commentInput }}
               editable={true}
               multiline={true}

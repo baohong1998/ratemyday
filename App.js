@@ -16,7 +16,8 @@ import PersonalPage from "./components/personal/personalPage";
 import PublicPage from "./components/public/publicPage";
 import SearchPage from "./components/search/searchPage";
 import SettingPage from "./components/setting/settingPage";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import PersonalHistory from "./components/history/personalHistory";
 export default class App extends Component {
   render() {
     return <AppContainer />;
@@ -35,11 +36,20 @@ export default class App extends Component {
 const LogoutNavigator = createSwitchNavigator({
   Home: HomeScreen
 });
+
 const PageNavigator = createBottomTabNavigator({
   Personal: {
     screen: PersonalPage,
     navigationOptions: () => ({
       tabBarIcon: () => <FontAwesome name="user" size={26} />
+    })
+  },
+  History: {
+    screen: PersonalHistory,
+    navigationOptions: () => ({
+      tabBarIcon: () => (
+        <MaterialCommunityIcons name="calendar-clock" size={26} />
+      )
     })
   },
   Public: {
@@ -59,6 +69,14 @@ const PageNavigator = createBottomTabNavigator({
     navigationOptions: () => ({
       tabBarIcon: () => <FontAwesome name="cog" size={26} />
     })
+  }
+});
+const StackPageNavigator = createStackNavigator({
+  PageNavigator: {
+    screen: PageNavigator,
+    navigationOptions: {
+      title: "Moodometer"
+    }
   }
 });
 const AuthNavigator = createStackNavigator({
@@ -90,7 +108,7 @@ const AuthNavigator = createStackNavigator({
 });
 const AppNavigator = createSwitchNavigator({
   Authen: AuthNavigator,
-  App: PageNavigator,
+  App: StackPageNavigator,
   Logout: LogoutNavigator
 });
 
