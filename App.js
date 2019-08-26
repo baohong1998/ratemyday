@@ -44,18 +44,19 @@ const PageNavigator = createBottomTabNavigator({
       tabBarIcon: () => <FontAwesome name="user" size={26} />
     })
   },
+
+  Public: {
+    screen: PublicPage,
+    navigationOptions: () => ({
+      tabBarIcon: () => <FontAwesome name="group" size={26} />
+    })
+  },
   History: {
     screen: PersonalHistory,
     navigationOptions: () => ({
       tabBarIcon: () => (
         <MaterialCommunityIcons name="calendar-clock" size={26} />
       )
-    })
-  },
-  Public: {
-    screen: PublicPage,
-    navigationOptions: () => ({
-      tabBarIcon: () => <FontAwesome name="group" size={26} />
     })
   },
   Search: {
