@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 import {
   Dimensions,
   Animated,
@@ -12,28 +12,27 @@ import {
   TouchableHighlight,
   Switch,
   Alert
-} from "react-native";
-import { Button } from "react-native-elements";
-import styles from "../../AppStyle";
-import { createStackNavigator, createAppContainer } from "react-navigation";
-import { Input } from "react-native-elements";
-import moment from "moment";
-import { Interactable } from "react-interactable";
-import Cursor from "../rateSlider/cursor";
-import { KeyboardAccessoryView } from "react-native-keyboard-accessory";
-import { Ionicons } from "@expo/vector-icons";
+} from 'react-native';
+import { Button } from 'react-native-elements';
+import styles from '../../AppStyle';
+
+import moment from 'moment';
+import { Interactable } from 'react-interactable';
+import Cursor from '../rateSlider/cursor';
+import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
+import { Ionicons } from '@expo/vector-icons';
 
 export default class PersonalPage extends Component {
   constructor() {
     super();
     this.state = {
-      date: "",
+      date: '',
       rating: 1,
       cursorPos: 0,
-      comment: "",
-      postedComment: "",
+      comment: '',
+      postedComment: '',
       inputHeight: 100,
-      mode: "Private",
+      mode: 'Private',
       isPublic: false,
       notEditing: true
     };
@@ -55,7 +54,7 @@ export default class PersonalPage extends Component {
 
   componentDidMount() {
     this.setState({
-      date: moment().format("ddd, MMMM Do YYYY")
+      date: moment().format('ddd, MMMM Do YYYY')
     });
   }
   setRate = x => {
@@ -90,19 +89,19 @@ export default class PersonalPage extends Component {
   };
   render() {
     const x = new Animated.Value(this.state.cursorPos);
-    const { height, width } = Dimensions.get("window");
+    const { height, width } = Dimensions.get('window');
     const sliderBarWidth = width - 50.0;
 
     return (
       <View style={styles.personalContainer}>
         <View style={styles.dateRateContainer}>
           <View style={styles.dateContainer}>
-            <Text style={{ fontSize: 25, alignSelf: "center" }}>
+            <Text style={{ fontSize: 25, alignSelf: 'center' }}>
               {this.state.date}
             </Text>
           </View>
           <View style={styles.rateContainer}>
-            <Text style={{ fontSize: 25, alignSelf: "center" }}>
+            <Text style={{ fontSize: 25, alignSelf: 'center' }}>
               {this.state.rating}
             </Text>
           </View>
@@ -112,7 +111,7 @@ export default class PersonalPage extends Component {
             <Animated.View
               style={{
                 ...StyleSheet.absoluteFillObject,
-                backgroundColor: "#d95fbe",
+                backgroundColor: '#d95fbe',
                 borderRadius: 50 / 2,
                 width: sliderBarWidth,
                 height: 50,
@@ -136,24 +135,24 @@ export default class PersonalPage extends Component {
         <ScrollView>
           <View style={styles.postButtonContainer}>
             <Text style={{ marginStart: 25, fontSize: 16 }}>
-              Your post is currently{" "}
-              {this.state.isPublic ? "Public" : "Private"}
+              Your post is currently{' '}
+              {this.state.isPublic ? 'Public' : 'Private'}
             </Text>
 
             <Switch
               onChange={() => {
                 Alert.alert(
-                  "Are you sure?",
+                  'Are you sure?',
                   this.state.isPublic
-                    ? "Your post will be Private"
-                    : "Your post will be Public",
+                    ? 'Your post will be Private'
+                    : 'Your post will be Public',
                   [
                     {
-                      text: "Yes",
+                      text: 'Yes',
                       onPress: () =>
                         this.setState({ isPublic: !this.state.isPublic })
                     },
-                    { text: "No" }
+                    { text: 'No' }
                   ]
                 );
               }}
@@ -162,18 +161,18 @@ export default class PersonalPage extends Component {
             />
           </View>
           <View style={styles.commentContainer}>
-            {this.state.postedComment !== "" ? (
+            {this.state.postedComment !== '' ? (
               <View style={styles.postedComment}>
                 <Text style={{ fontSize: 20 }}>{this.state.postedComment}</Text>
               </View>
             ) : null}
             <Button
               title={
-                this.state.postedComment !== ""
-                  ? "Edit your thoughts"
-                  : "+ Add your thoughts on the rating"
+                this.state.postedComment !== ''
+                  ? 'Edit your thoughts'
+                  : '+ Add your thoughts on the rating'
               }
-              titleStyle={{ color: "white" }}
+              titleStyle={{ color: 'white' }}
               onPress={this.activateKeyboard}
               buttonStyle={styles.historyButton}
               containerStyle={styles.historyButtonContainer}
@@ -192,10 +191,10 @@ export default class PersonalPage extends Component {
           <View
             style={{
               height: 50,
-              backgroundColor: "white",
-              flexDirection: "row",
-              alignItems: "space-between",
-              justifyContent: "center"
+              backgroundColor: 'white',
+              flexDirection: 'row',
+              alignItems: 'space-between',
+              justifyContent: 'center'
             }}
           >
             <TextInput

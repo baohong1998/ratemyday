@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 import {
   Dimensions,
   Animated,
@@ -8,15 +8,13 @@ import {
   TextInput,
   Keyboard,
   ScrollView
-} from "react-native";
-import { Button } from "react-native-elements";
-import styles from "../../AppStyle";
+} from 'react-native';
+import { Button } from 'react-native-elements';
+import styles from '../../AppStyle';
 
-import { Input } from "react-native-elements";
-import moment from "moment";
-import { Calendar } from "react-native-calendars";
-import { KeyboardAccessoryView } from "react-native-keyboard-accessory";
-import { Ionicons } from "@expo/vector-icons";
+import { Input } from 'react-native-elements';
+import moment from 'moment';
+import { Calendar } from 'react-native-calendars';
 
 export default class PersonalHistory extends Component {
   render() {
@@ -24,18 +22,18 @@ export default class PersonalHistory extends Component {
       <React.Fragment>
         <View style={{ flex: 1 }}>
           <Calendar
-            style={{ alignSelf: "stretch", paddingTop: 20 }}
+            style={{ alignSelf: 'stretch', paddingTop: 20 }}
             theme={{
-              selectedDayBackgroundColor: "#00adf5",
-              indicatorColor: "blue"
+              selectedDayBackgroundColor: '#00adf5',
+              indicatorColor: 'blue'
             }}
           />
           <View
             style={{
-              alignSelf: "flex-start",
-              backgroundColor: "white",
-              flexDirection: "row",
-              shadowColor: "#000",
+              alignSelf: 'flex-start',
+              backgroundColor: 'white',
+              flexDirection: 'row',
+              shadowColor: '#000',
               shadowOffset: {
                 width: 0,
                 height: 2
@@ -49,14 +47,14 @@ export default class PersonalHistory extends Component {
           >
             <View
               style={{
-                alignSelf: "flex-start",
-                alignItems: "center",
-                justifyContent: "center",
+                alignSelf: 'flex-start',
+                alignItems: 'center',
+                justifyContent: 'center',
                 width: 100,
                 height: 100,
                 borderRadius: 50,
-                backgroundColor: "white",
-                shadowColor: "#000",
+                backgroundColor: 'white',
+                shadowColor: '#000',
                 margin: 20,
                 shadowOffset: {
                   width: 0,
