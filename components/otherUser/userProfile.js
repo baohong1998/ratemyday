@@ -1,37 +1,73 @@
-import React, { Component } from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import React, { Component } from "react";
+import { StyleSheet, Text, View, ScrollView, AsyncStorage } from "react-native";
 
-import styles from '../../AppStyle';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Button, Avatar, Input } from 'react-native-elements';
-import UserPastPost from './userPostList';
+import styles from "../../AppStyle";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Button, Avatar, Input } from "react-native-elements";
+import UserPastPost from "./userPostList";
+const config = require("../../config/config.json");
+var GET_USER_INFO;
+if (process.env.NODE_ENV === "development") {
+  GET_USER_INFO = config.development + "/get-person-info";
+} else {
+  GET_USER_INFO = config.production + "/get-person-info";
+}
 export default class UserProfile extends Component {
   state = {
     isFriend: false,
-    pending: false
+    pending: false,
+    firstname: "",
+    lastname: "",
+    username: ""
   };
+  getUserInfo = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const personid = this.props.navigation.getParam("id", 0);
+    fetch(GET_USER_INFO, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+        personid
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        console.log("Ress hhmhmm", data);
+        this.setState({
+          firstname: data.data[0].firstname,
+          lastname: data.data[0].lastname,
+          username: data.data[0].username
+        });
+      });
+  };
+  componentDidMount() {
+    this.getUserInfo();
+  }
   render() {
     const addIcon = (
       <FontAwesome name="plus" color="white" style={{ marginRight: 10 }} />
     );
     return (
       <View
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
+        style={{ flex: 1, justifyContent: "center", alignItems: "stretch" }}
       >
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View style={{ flex: 1, justifyContent: "center" }}>
           <View
             style={{
               flex: 1,
-              flexDirection: 'row',
-              justifyContent: 'center'
+              flexDirection: "row",
+              justifyContent: "center"
             }}
           >
             <View
               style={{
                 flex: 2,
 
-                justifyContent: 'center',
-                alignItems: 'center'
+                justifyContent: "center",
+                alignItems: "center"
               }}
             >
               <Avatar size="large" rounded title="BH" />
@@ -39,20 +75,20 @@ export default class UserProfile extends Component {
             <View
               style={{
                 flex: 4,
-                justifyContent: 'center',
-                alignItems: 'center',
+                justifyContent: "center",
+                alignItems: "center",
                 marginTop: 10
               }}
             >
-              <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
-                First Last
+              <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+                {this.state.firstname + " " + this.state.lastname}
               </Text>
-              <Text>@Username</Text>
+              <Text>@{this.state.username}</Text>
               <Button
                 buttonStyle={{
                   borderRadius: 25,
                   width: 150,
-                  backgroundColor: '#d95fbe'
+                  backgroundColor: "#d95fbe"
                 }}
                 icon={
                   !this.state.isFriend && !this.state.pending ? addIcon : null
@@ -60,12 +96,12 @@ export default class UserProfile extends Component {
                 iconLeft={true}
                 title={
                   !this.state.isFriend && !this.state.pending
-                    ? 'Add friend'
+                    ? "Add friend"
                     : this.state.pending
-                    ? 'Cancel'
+                    ? "Cancel"
                     : this.state.isFriend
-                    ? 'Unfriend'
-                    : ''
+                    ? "Unfriend"
+                    : ""
                 }
                 onPress={() => {
                   !this.state.isFriend && !this.state.pending
@@ -74,22 +110,22 @@ export default class UserProfile extends Component {
                     ? this.setState({ pending: false })
                     : this.state.isFriend
                     ? this.setState({ isFriend: false })
-                    : '';
+                    : "";
                 }}
               />
             </View>
           </View>
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between'
+              flexDirection: "row",
+              justifyContent: "space-between"
             }}
           >
             <View
               style={{
                 flex: 3,
-                alignItems: 'center',
-                justifyContent: 'center'
+                alignItems: "center",
+                justifyContent: "center"
               }}
             >
               <Text style={{ fontSize: 20 }}>Avg: 7.0</Text>
@@ -97,20 +133,20 @@ export default class UserProfile extends Component {
             <View
               style={{
                 flex: 3,
-                alignItems: 'center',
-                justifyContent: 'center'
+                alignItems: "center",
+                justifyContent: "center"
               }}
             >
               <Text style={{ fontSize: 20 }}>Public Avg:7.0</Text>
             </View>
           </View>
         </View>
-        <View style={{ flex: 3.5, paddingTop: 20, flexDirection: 'column' }}>
-          <View style={{ borderBottomColor: '#b2b2b2', borderBottomWidth: 1 }}>
+        <View style={{ flex: 3.5, paddingTop: 20, flexDirection: "column" }}>
+          <View style={{ borderBottomColor: "#b2b2b2", borderBottomWidth: 1 }}>
             <Text
               style={{
                 fontSize: 20,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 paddingLeft: 20,
                 paddingBottom: 10
               }}

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import {
   Dimensions,
   Animated,
@@ -11,28 +11,43 @@ import {
   ScrollView,
   TouchableHighlight,
   Switch,
+  AsyncStorage,
   Alert
-} from 'react-native';
-import { Button } from 'react-native-elements';
-import styles from '../../AppStyle';
+} from "react-native";
+import { Button } from "react-native-elements";
+import styles from "../../AppStyle";
 
-import moment from 'moment';
-import { Interactable } from 'react-interactable';
-import Cursor from '../rateSlider/cursor';
-import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
-import { Ionicons } from '@expo/vector-icons';
-
+import moment from "moment";
+import { Interactable } from "react-interactable";
+import Cursor from "../rateSlider/cursor";
+import { KeyboardAccessoryView } from "react-native-keyboard-accessory";
+import { Ionicons } from "@expo/vector-icons";
+const config = require("../../config/config.json");
+var POST_PERSON_URL;
+var GET_TODAY_POST;
+var EDIT_TODAY_POST;
+if (process.env.NODE_ENV === "development") {
+  POST_PERSON_URL = config.development + "/post-personal-rating";
+  GET_TODAY_POST = config.development + "/check-today-post";
+  EDIT_TODAY_POST = config.development + "/edit-personal-rating";
+} else {
+  POST_PERSON_URL = config.production + "/post-personal-rating";
+  GET_TODAY_POST = config.production + "/check-today-post";
+  EDIT_TODAY_POST = config.production + "/edit-personal-rating";
+}
 export default class PersonalPage extends Component {
   constructor() {
     super();
     this.state = {
-      date: '',
-      rating: 1,
+      post_id: "undefined",
+      date: "",
+      snapPoints: [],
+      rating: "Give today a rating",
       cursorPos: 0,
-      comment: '',
-      postedComment: '',
+      comment: "",
+      postedComment: "",
       inputHeight: 100,
-      mode: 'Private',
+      mode: "Private",
       isPublic: false,
       notEditing: true
     };
@@ -51,11 +66,48 @@ export default class PersonalPage extends Component {
     }
     return true;
   }
-
+  getSnapPoints = snapPoints => {
+    this.setState({
+      snapPoints
+    });
+  };
+  getTodayPost = async () => {
+    const token = await AsyncStorage.getItem("token");
+    fetch(GET_TODAY_POST, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        console.log(data);
+        if (data.data.length > 0) {
+          this.setState({
+            post_id: data.data[0].id,
+            rating: data.data[0].rating,
+            postedComment: data.data[0].reasons,
+            isPublic: data.data[0].public === 1 ? true : false,
+            mode: data.data[0].public === 1 ? "Public" : "Private",
+            cursorPos:
+              this.state.snapPoints.length > 0
+                ? this.state.snapPoints[data.data[0].rating - 1].x
+                : 0
+          });
+          this.setState({
+            notEditing: true
+          });
+        }
+      });
+  };
   componentDidMount() {
     this.setState({
-      date: moment().format('ddd, MMMM Do YYYY')
+      date: moment().format("ddd, MMMM Do YYYY")
     });
+    this.getTodayPost();
   }
   setRate = x => {
     this.setState({
@@ -71,7 +123,6 @@ export default class PersonalPage extends Component {
     this.inputKeyboard.current.focus();
   };
   submitComment = e => {
-    console.log(this.inputKeyboard);
     this.setState({
       postedComment: this.state.comment
     });
@@ -82,26 +133,76 @@ export default class PersonalPage extends Component {
       inputHeight: height
     });
   };
-  savePost = () => {
+  postNewPost = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const { rating, postedComment, isPublic } = this.state;
+    fetch(POST_PERSON_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        rating,
+        reasons: postedComment,
+        public: isPublic ? 1 : 0
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        console.log(data);
+      });
+  };
+  editPost = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const { rating, postedComment, isPublic, post_id } = this.state;
+    fetch(EDIT_TODAY_POST, {
+      method: "PATCH",
+      body: JSON.stringify({
+        rating,
+        reasons: postedComment,
+        public: isPublic ? 1 : 0,
+        post_id
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        console.log(data);
+      });
+  };
+  savePost = async () => {
+    if (this.state.post_id === "undefined") {
+      await this.postNewPost();
+    } else {
+      await this.editPost();
+    }
     this.setState({
       notEditing: true
     });
   };
   render() {
     const x = new Animated.Value(this.state.cursorPos);
-    const { height, width } = Dimensions.get('window');
+    const { height, width } = Dimensions.get("window");
     const sliderBarWidth = width - 50.0;
 
     return (
       <View style={styles.personalContainer}>
         <View style={styles.dateRateContainer}>
           <View style={styles.dateContainer}>
-            <Text style={{ fontSize: 25, alignSelf: 'center' }}>
+            <Text style={{ fontSize: 25, alignSelf: "center" }}>
               {this.state.date}
             </Text>
           </View>
           <View style={styles.rateContainer}>
-            <Text style={{ fontSize: 25, alignSelf: 'center' }}>
+            <Text style={{ fontSize: 25, alignSelf: "center" }}>
               {this.state.rating}
             </Text>
           </View>
@@ -111,7 +212,7 @@ export default class PersonalPage extends Component {
             <Animated.View
               style={{
                 ...StyleSheet.absoluteFillObject,
-                backgroundColor: '#d95fbe',
+                backgroundColor: "#d95fbe",
                 borderRadius: 50 / 2,
                 width: sliderBarWidth,
                 height: 50,
@@ -123,8 +224,12 @@ export default class PersonalPage extends Component {
             <Cursor
               size={sliderBarWidth}
               margin={25}
+              getSnapPoints={this.getSnapPoints}
               {...{ x }}
               setPos={this.setPos}
+              val={
+                typeof this.state.rating === "string" ? 1 : this.state.rating
+              }
               setRate={this.setRate}
             />
           </View>
@@ -135,24 +240,24 @@ export default class PersonalPage extends Component {
         <ScrollView>
           <View style={styles.postButtonContainer}>
             <Text style={{ marginStart: 25, fontSize: 16 }}>
-              Your post is currently{' '}
-              {this.state.isPublic ? 'Public' : 'Private'}
+              Your post is currently{" "}
+              {this.state.isPublic ? "Public" : "Private"}
             </Text>
 
             <Switch
               onChange={() => {
                 Alert.alert(
-                  'Are you sure?',
+                  "Are you sure?",
                   this.state.isPublic
-                    ? 'Your post will be Private'
-                    : 'Your post will be Public',
+                    ? "Your post will be Private"
+                    : "Your post will be Public",
                   [
                     {
-                      text: 'Yes',
+                      text: "Yes",
                       onPress: () =>
                         this.setState({ isPublic: !this.state.isPublic })
                     },
-                    { text: 'No' }
+                    { text: "No" }
                   ]
                 );
               }}
@@ -161,18 +266,18 @@ export default class PersonalPage extends Component {
             />
           </View>
           <View style={styles.commentContainer}>
-            {this.state.postedComment !== '' ? (
+            {this.state.postedComment !== "" ? (
               <View style={styles.postedComment}>
                 <Text style={{ fontSize: 20 }}>{this.state.postedComment}</Text>
               </View>
             ) : null}
             <Button
               title={
-                this.state.postedComment !== ''
-                  ? 'Edit your thoughts'
-                  : '+ Add your thoughts on the rating'
+                this.state.postedComment !== ""
+                  ? "Edit your thoughts"
+                  : "+ Add your thoughts on the rating"
               }
-              titleStyle={{ color: 'white' }}
+              titleStyle={{ color: "white" }}
               onPress={this.activateKeyboard}
               buttonStyle={styles.historyButton}
               containerStyle={styles.historyButtonContainer}
@@ -191,10 +296,10 @@ export default class PersonalPage extends Component {
           <View
             style={{
               height: 50,
-              backgroundColor: 'white',
-              flexDirection: 'row',
-              alignItems: 'space-between',
-              justifyContent: 'center'
+              backgroundColor: "white",
+              flexDirection: "row",
+              alignItems: "space-between",
+              justifyContent: "center"
             }}
           >
             <TextInput

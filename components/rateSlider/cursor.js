@@ -6,9 +6,21 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 import Interactable from "react-interactable";
 
 export default class Cursor extends React.PureComponent {
+  state = {
+    val: 1,
+    snapPoints: new Array(10)
+      .fill(0)
+      .map((e, i) => ({ x: i * (this.props.size / 10) + this.props.margin }))
+  };
+  componentDidMount() {
+    this.props.getSnapPoints(this.state.snapPoints);
+  }
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      val: nextProps.val
+    });
+  }
   calRate = e => {
-    console.log(e);
-
     this.props.setRate(e.index + 1);
   };
   calPos = e => {
@@ -16,17 +28,16 @@ export default class Cursor extends React.PureComponent {
   };
   render() {
     const { x, size, margin } = this.props;
-    const snapPoints = new Array(10)
-      .fill(0)
-      .map((e, i) => ({ x: i * (size / 10) + margin }));
+
     var endPoints = size - margin;
+
     return (
       <Interactable.View
         onSnap={this.calRate}
         frictionAreas={[{ damping: 0.5, influenceArea: { top: 0 } }]}
         onDrag={this.calPos}
-        {...{ snapPoints }}
-        initialPosition={{ x: 0 + margin }}
+        snapPoints={this.state.snapPoints}
+        initialPosition={{ x: this.state.snapPoints[this.state.val - 1].x }}
         animatedValueX={x}
         boundaries={{ left: 0 + margin, right: endPoints }}
         horizontalOnly

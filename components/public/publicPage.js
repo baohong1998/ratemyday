@@ -6,7 +6,14 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 import { Input } from "react-native-elements";
 import moment from "moment";
 import PostElement from "./postElement";
-
+const config = require("../../config/config.json");
+var GET_PUBLIC_LIST;
+var GET_PUBLIC_RATING;
+if (process.env.NODE_ENV === "development") {
+  GET_PUBLIC_LIST = config.development + "/get-public-list";
+} else {
+  GET_PUBLIC_LIST = config.production + "/get-public-list";
+}
 export default class PublicPage extends Component {
   constructor() {
     super();
@@ -59,6 +66,7 @@ export default class PublicPage extends Component {
       comment={item.comment}
       numPublicRatings={item.numPublicRatings}
       avgPublicRatings={item.avgPublicRatings}
+      navigation={this.props.navigation}
     />
   );
   render() {

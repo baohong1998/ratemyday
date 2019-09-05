@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,70 +6,55 @@ import {
   View,
   TextInput,
   ScrollView,
-  TouchableHighlight
-} from 'react-native';
-import { Button, Input } from 'react-native-elements';
-import styles from '../../AppStyle';
-import { createStackNavigator, createAppContainer } from 'react-navigation';
+  TouchableHighlight,
+  AsyncStorage
+} from "react-native";
+import { Button, Input } from "react-native-elements";
+import styles from "../../AppStyle";
+import { createStackNavigator, createAppContainer } from "react-navigation";
 
-import moment from 'moment';
-import { Ionicons } from '@expo/vector-icons';
+import moment from "moment";
+import { Ionicons } from "@expo/vector-icons";
 
-import FriendList from './friendList';
-import SearchList from './searchList';
+import FriendList from "./friendList";
+import SearchList from "./searchList";
+const config = require("../../config/config.json");
+var GET_SEARCH_LIST;
+if (process.env.NODE_ENV === "development") {
+  GET_SEARCH_LIST = config.development + "/search-user";
+} else {
+  GET_SEARCH_LIST = config.production + "/search-user";
+}
 
 export default class SearchPage extends Component {
   constructor() {
     super();
     this.state = {
-      query: '',
+      query: "",
       isSearch: false,
-      friendList: [
-        {
-          user_id: '8',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        },
-        {
-          user_id: '9',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        },
-        {
-          user_id: '2',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        },
-        {
-          user_id: '3',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        },
-        {
-          user_id: '10',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        },
-        {
-          user_id: '11',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        },
-        {
-          user_id: '15',
-          username: 'hmmNice',
-          first: 'Bao',
-          last: 'Hong'
-        }
-      ]
+      searchList: []
     };
   }
+  getSearchList = async query => {
+    const token = await AsyncStorage.getItem("token");
+
+    fetch(GET_SEARCH_LIST, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+        query
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        this.setState({
+          searchList: data.data
+        });
+      });
+  };
 
   render() {
     //console.log(this.props);
@@ -78,10 +63,10 @@ export default class SearchPage extends Component {
         <View
           style={{
             height: 50,
-            backgroundColor: '#fff',
-            borderBottomColor: '#ededed',
+            backgroundColor: "#fff",
+            borderBottomColor: "#ededed",
             borderBottomWidth: 1,
-            flexDirection: 'row'
+            flexDirection: "row"
           }}
         >
           <Ionicons
@@ -93,11 +78,11 @@ export default class SearchPage extends Component {
           <TextInput
             placeholder="Search"
             onFocus={() => this.setState({ isSearch: true })}
-            onChangeText={value => this.setState({ query: value })}
+            onChangeText={value => this.getSearchList(value)}
             style={{
               flex: 1,
-              backgroundColor: '#ededed',
-              alignItems: 'center',
+              backgroundColor: "#ededed",
+              alignItems: "center",
               borderRadius: 20,
               margin: 7,
               paddingHorizontal: 10
@@ -108,7 +93,7 @@ export default class SearchPage extends Component {
           {this.state.isSearch ? (
             <TouchableHighlight
               onPress={() => this.setState({ isSearch: false })}
-              style={{ justifyContent: 'center' }}
+              style={{ justifyContent: "center" }}
             >
               <Text style={{ fontSize: 18, marginEnd: 10 }}>Cancel</Text>
             </TouchableHighlight>
@@ -117,13 +102,10 @@ export default class SearchPage extends Component {
         {this.state.isSearch ? (
           <SearchList
             navigation={this.props.navigation}
-            searchList={this.state.friendList}
+            searchList={this.state.searchList}
           />
         ) : (
-          <FriendList
-            navigation={this.props.navigation}
-            friendList={this.state.friendList}
-          />
+          <FriendList navigation={this.props.navigation} />
         )}
       </ScrollView>
     );

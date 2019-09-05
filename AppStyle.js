@@ -30,6 +30,7 @@ export default StyleSheet.create({
     borderRadius: 25,
     borderColor: "black",
     borderWidth: 2,
+
     padding: 10
   },
   commentInput: {

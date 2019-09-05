@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableHighlight } from "react-native";
 import { Button, Avatar } from "react-native-elements";
 import styles from "../../AppStyle";
 import { createStackNavigator, createAppContainer } from "react-navigation";
@@ -33,30 +33,38 @@ export default class PostElement extends Component {
           shadowRadius: 3.84
         }}
       >
-        <View
+        <TouchableHighlight
+          underlayColor="rgba(0,0,0,0)"
           style={{
-            flex: 1,
-            justifyContent: "center",
-            paddingHorizontal: 10,
-            flexDirection: "row",
-            alignSelf: "flex-start"
+            flex: 1
           }}
+          onPress={() => this.props.navigation.navigate("UserProfile")}
         >
-          <Avatar
-            size="small"
-            rounded
-            title="BH"
-            containerStyle={{ alignSelf: "center", marginRight: 10 }}
-          />
-          <View style={{ justifyContent: "center" }}>
-            <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-              {this.props.name}
-            </Text>
-            <Text style={{ fontSize: 12, fontWeight: "100" }}>
-              {this.props.username}
-            </Text>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              paddingHorizontal: 10,
+              flexDirection: "row",
+              alignSelf: "flex-start"
+            }}
+          >
+            <Avatar
+              size="small"
+              rounded
+              title="BH"
+              containerStyle={{ alignSelf: "center", marginRight: 10 }}
+            />
+            <View style={{ justifyContent: "center" }}>
+              <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                {this.props.name}
+              </Text>
+              <Text style={{ fontSize: 12, fontWeight: "100" }}>
+                {this.props.username}
+              </Text>
+            </View>
           </View>
-        </View>
+        </TouchableHighlight>
         <View
           style={{
             flex: 3,

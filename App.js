@@ -1,26 +1,28 @@
-import React, { Component } from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import styles from './AppStyle';
+import React, { Component } from "react";
+import { StyleSheet, Text, View, Button, AsyncStorage } from "react-native";
+import styles from "./AppStyle";
 import {
   createStackNavigator,
   createAppContainer,
   createSwitchNavigator,
   createBottomTabNavigator,
   NavigationEvents
-} from 'react-navigation';
-import createAnimatedSwitchNavigator from 'react-navigation-animated-switch';
-import HomeScreen from './components/authen/Homescreen';
-import LoginScreen from './components/authen/login';
-import SignupScreen from './components/authen/signup';
-import SubmitSignup from './components/authen/submitSignup';
-import PersonalPage from './components/personal/personalPage';
-import PublicPage from './components/public/publicPage';
-import SearchPage from './components/search/searchPage';
-import SettingPage from './components/setting/settingPage';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import PersonalHistory from './components/history/personalHistory';
-import UserProfile from './components/otherUser/userProfile';
-import NotificationPage from './components/notification/notificationPage';
+} from "react-navigation";
+import createAnimatedSwitchNavigator from "react-navigation-animated-switch";
+import Loading from "./components/authen/loading";
+import HomeScreen from "./components/authen/Homescreen";
+import LoginScreen from "./components/authen/login";
+import SignupScreen from "./components/authen/signup";
+import SubmitSignup from "./components/authen/submitSignup";
+import PersonalPage from "./components/personal/personalPage";
+import PublicPage from "./components/public/publicPage";
+import SearchPage from "./components/search/searchPage";
+import SettingPage from "./components/setting/settingPage";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import PersonalHistory from "./components/history/personalHistory";
+import UserProfile from "./components/otherUser/userProfile";
+import NotificationPage from "./components/notification/notificationPage";
+
 export default class App extends Component {
   render() {
     return <AppContainer />;
@@ -53,6 +55,20 @@ const SearchNavigtor = createStackNavigator({
     })
   }
 });
+const PublicNavigator = createStackNavigator({
+  PublicPage: {
+    screen: PublicPage,
+    navigationOptions: () => ({
+      header: null
+    })
+  },
+  UserProfile: {
+    screen: UserProfile,
+    navigationOptions: () => ({
+      header: null
+    })
+  }
+});
 const PageNavigator = createBottomTabNavigator({
   Personal: {
     screen: PersonalPage,
@@ -62,7 +78,7 @@ const PageNavigator = createBottomTabNavigator({
   },
 
   Public: {
-    screen: PublicPage,
+    screen: PublicNavigator,
     navigationOptions: () => ({
       tabBarIcon: () => <FontAwesome name="group" size={26} />
     })
@@ -93,14 +109,14 @@ const StackPageNavigator = createStackNavigator(
     Settings: {
       screen: SettingPage,
       navigationOptions: () => ({
-        title: 'Moodometer'
+        title: "Moodometer"
       })
     },
     PageNavigator: {
       screen: PageNavigator,
       navigationOptions: ({ navigation }) => {
         return {
-          title: 'Moodometer',
+          title: "Moodometer",
           headerBackTitle: null,
           headerBackImage: null,
           headerRight: (
@@ -109,8 +125,7 @@ const StackPageNavigator = createStackNavigator(
               size={26}
               style={{ marginRight: 20 }}
               onPress={() => {
-                console.log(navigation);
-                navigation.navigate('Settings');
+                navigation.navigate("Settings");
               }}
             />
           )
@@ -119,7 +134,7 @@ const StackPageNavigator = createStackNavigator(
     }
   },
   {
-    initialRouteName: 'PageNavigator'
+    initialRouteName: "PageNavigator"
   }
 );
 const AuthNavigator = createStackNavigator({
@@ -149,7 +164,9 @@ const AuthNavigator = createStackNavigator({
     })
   }
 });
+
 const AppNavigator = createSwitchNavigator({
+  Load: Loading,
   Authen: AuthNavigator,
   App: StackPageNavigator,
   Logout: LogoutNavigator
