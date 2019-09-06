@@ -498,14 +498,15 @@ router.get("/get-public-list", (req, res) => {
 
 router.get("/get-friend-list", (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
+  const status = req.headers.status;
   return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded) => {
     if (err) {
       return res.status(401).end();
     }
     const user_id = decoded.id;
     pool.query(
-      "SELECT friend_id, firstname, lastname, username FROM user_credentials INNER JOIN user_info ON `user_credentials`.`id` = `user_info`.`id` INNER JOIN friendship ON `friendship`.`friend_id` = `user_info`.`id`  WHERE `friendship`.`user_id` = ? AND `friendship`.`status` = 3",
-      [user_id],
+      "SELECT uuid, friend_id, firstname, lastname, username FROM user_credentials INNER JOIN user_info ON `user_credentials`.`id` = `user_info`.`id` INNER JOIN friendship ON `friendship`.`friend_id` = `user_info`.`id`  WHERE `friendship`.`user_id` = ? AND `friendship`.`status` = ?",
+      [user_id, status],
       (errors, results, fields) => {
         if (errors) {
           console.log(errors);
@@ -523,34 +524,34 @@ router.get("/get-friend-list", (req, res) => {
     );
   });
 });
-router.get("/get-pending-list", (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(401).end();
-    }
-    const user_id = decoded.id;
-    console.log(user_id);
-    pool.query(
-      "SELECT uuid, friend_id FROM friendship WHERE user_id = ? AND status = 1",
-      [user_id],
-      (errors, results, fields) => {
-        if (errors) {
-          console.log(errors);
-          return res.json({
-            success: false,
-            err: errors
-          });
-        }
-        return res.json({
-          success: true,
-          err: null,
-          data: results
-        });
-      }
-    );
-  });
-});
+// router.get("/get-pending-list", (req, res) => {
+//   const token = req.headers.authorization.split(" ")[1];
+//   return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).end();
+//     }
+//     const user_id = decoded.id;
+//     console.log(user_id);
+//     pool.query(
+//       "SELECT uuid, friend_id, firstname, lastname, username FROM friendship WHERE user_id = ? AND status = 1",
+//       [user_id],
+//       (errors, results, fields) => {
+//         if (errors) {
+//           console.log(errors);
+//           return res.json({
+//             success: false,
+//             err: errors
+//           });
+//         }
+//         return res.json({
+//           success: true,
+//           err: null,
+//           data: results
+//         });
+//       }
+//     );
+//   });
+// });
 router.get("/search-user", (req, res) => {
   const query = req.headers.query;
   const name = query.split(" ");
@@ -586,6 +587,7 @@ router.get("/get-person-info", (req, res) => {
   const person_id = req.headers.personid;
   return jwt.verify(token, process.env.TOKEN_KEY, (err, decoded) => {
     if (err) return res.status(401).end();
+    const user_id = decoded.id;
     pool.query(
       "SELECT user_credentials.id, user_credentials.username, user_info.firstname, user_info.lastname FROM user_credentials INNER JOIN user_info ON user_credentials.id = user_info.id WHERE user_credentials.id = ?",
       [person_id],
@@ -597,11 +599,25 @@ router.get("/get-person-info", (req, res) => {
             err: errors
           });
         }
-        return res.json({
-          success: true,
-          err: null,
-          data: results
-        });
+        pool.query(
+          "SELECT uuid, status FROM friendship WHERE user_id = ? AND friend_id = ?",
+          [user_id, person_id],
+          (errors, status, fields) => {
+            if (errors) {
+              console.log(errors);
+              return res.json({
+                success: false,
+                err: errors
+              });
+            }
+            return res.json({
+              success: true,
+              err: null,
+              data: results,
+              status
+            });
+          }
+        );
       }
     );
   });

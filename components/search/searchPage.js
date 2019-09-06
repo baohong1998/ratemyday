@@ -105,7 +105,16 @@ export default class SearchPage extends Component {
             searchList={this.state.searchList}
           />
         ) : (
-          <FriendList navigation={this.props.navigation} />
+          <View>
+            <FriendList
+              listName={"Pending List"}
+              navigation={this.props.navigation}
+            />
+            <FriendList
+              listName={"Friends List"}
+              navigation={this.props.navigation}
+            />
+          </View>
         )}
       </ScrollView>
     );

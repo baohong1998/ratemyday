@@ -4,6 +4,7 @@ import FriendElement from "./friendElement";
 
 const config = require("../../config/config.json");
 var GET_FRIEND_LIST;
+
 if (process.env.NODE_ENV === "development") {
   GET_FRIEND_LIST = config.development + "/get-friend-list";
 } else {
@@ -12,9 +13,15 @@ if (process.env.NODE_ENV === "development") {
 
 export default class FriendList extends Component {
   state = {
-    friendList: []
+    friendList: [],
+    listName: ""
   };
-  _keyExtractor = (item, index) => item.friend_id.toString();
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      listName: nextProps.listName
+    });
+  }
+  _keyExtractor = (item, index) => item.uuid;
 
   _renderItem = ({ item }) => (
     <FriendElement
@@ -24,13 +31,14 @@ export default class FriendList extends Component {
       navigation={this.props.navigation}
     />
   );
-  getFriendList = async () => {
+  getFriendList = async status => {
     const token = await AsyncStorage.getItem("token");
     fetch(GET_FRIEND_LIST, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + token
+        Authorization: "Bearer " + token,
+        status
       }
     })
       .then(res => {
@@ -43,13 +51,19 @@ export default class FriendList extends Component {
         });
       });
   };
+
   componentDidMount() {
-    this.getFriendList();
+    if (this.props.listName === "Friends List") this.getFriendList(3);
+    else {
+      this.getFriendList(1);
+    }
   }
   render() {
     return (
       <View style={{ margin: 15 }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>Friends list</Text>
+        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+          {this.props.listName}
+        </Text>
         <FlatList
           style={{
             marginTop: 10
