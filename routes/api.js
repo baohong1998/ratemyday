@@ -674,7 +674,8 @@ router.post("/friend-request", (req, res) => {
                   return res.json({
                     success: true,
                     err: null,
-                    data: results
+                    data: results,
+                    relation_id
                   });
                 }
               );

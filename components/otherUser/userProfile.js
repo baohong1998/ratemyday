@@ -7,10 +7,16 @@ import { Button, Avatar, Input } from "react-native-elements";
 import UserPastPost from "./userPostList";
 const config = require("../../config/config.json");
 var GET_USER_INFO;
+var SEND_FRIEND_REQUEST;
+var DELETE_FRIEND;
 if (process.env.NODE_ENV === "development") {
   GET_USER_INFO = config.development + "/get-person-info";
+  SEND_FRIEND_REQUEST = config.development + "/friend-request";
+  DELETE_FRIEND = config.development + "/remove-friend";
 } else {
   GET_USER_INFO = config.production + "/get-person-info";
+  SEND_FRIEND_REQUEST = config.production + "/friend-request";
+  DELETE_FRIEND = config.production + "/remove-friend";
 }
 export default class UserProfile extends Component {
   state = {
@@ -18,7 +24,49 @@ export default class UserProfile extends Component {
     pending: false,
     firstname: "",
     lastname: "",
-    username: ""
+    username: "",
+    uuid: ""
+  };
+  removeFriend = async () => {
+    const token = await AsyncStorage.getItem("token");
+    fetch(DELETE_FRIEND, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify({
+        relationid: this.state.uuid
+      })
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        //console.log(data);
+        if (data.success) this.setState({ pending: false, isFriend: false });
+      });
+  };
+  sendFriendRequest = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const friendid = this.props.navigation.getParam("id", 0);
+    fetch(SEND_FRIEND_REQUEST, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+        friendid
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        //console.log(data);
+        if (data.success) {
+          this.setState({ pending: true, uuid: data.relation_id });
+        }
+      });
   };
   getUserInfo = async () => {
     const token = await AsyncStorage.getItem("token");
@@ -35,11 +83,24 @@ export default class UserProfile extends Component {
         return res.json();
       })
       .then(data => {
-        console.log("Ress hhmhmm", data);
+        //console.log("Ress hhmhmm", data);
         this.setState({
           firstname: data.data[0].firstname,
           lastname: data.data[0].lastname,
-          username: data.data[0].username
+          username: data.data[0].username,
+          pending:
+            data.status.length == 0
+              ? false
+              : data.status[0].status == 0
+              ? true
+              : false,
+          isFriend:
+            data.status.length == 0
+              ? false
+              : data.status[0].status == 3
+              ? true
+              : false,
+          uuid: data.status.length > 0 ? data.status[0].uuid : ""
         });
       });
   };
@@ -105,11 +166,11 @@ export default class UserProfile extends Component {
                 }
                 onPress={() => {
                   !this.state.isFriend && !this.state.pending
-                    ? this.setState({ pending: true })
+                    ? this.sendFriendRequest()
                     : this.state.pending
-                    ? this.setState({ pending: false })
+                    ? this.removeFriend()
                     : this.state.isFriend
-                    ? this.setState({ isFriend: false })
+                    ? this.removeFriend()
                     : "";
                 }}
               />

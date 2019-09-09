@@ -7,7 +7,8 @@ import {
   TextInput,
   ScrollView,
   TouchableHighlight,
-  AsyncStorage
+  AsyncStorage,
+  RefreshControl
 } from "react-native";
 import { Button, Input } from "react-native-elements";
 import styles from "../../AppStyle";
@@ -20,10 +21,13 @@ import FriendList from "./friendList";
 import SearchList from "./searchList";
 const config = require("../../config/config.json");
 var GET_SEARCH_LIST;
+var GET_FRIEND_LIST;
 if (process.env.NODE_ENV === "development") {
   GET_SEARCH_LIST = config.development + "/search-user";
+  GET_FRIEND_LIST = config.development + "/get-friend-list";
 } else {
   GET_SEARCH_LIST = config.production + "/search-user";
+  GET_FRIEND_LIST = config.production + "/get-friend-list";
 }
 
 export default class SearchPage extends Component {
@@ -32,9 +36,38 @@ export default class SearchPage extends Component {
     this.state = {
       query: "",
       isSearch: false,
-      searchList: []
+      searchList: [],
+      friendList: [],
+      pendList: [],
+      refreshing: false
     };
   }
+  getFriendList = async status => {
+    const token = await AsyncStorage.getItem("token");
+    fetch(GET_FRIEND_LIST, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+        status
+      }
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        //console.log("Ress hhmhmm", data);
+        if (status === 3)
+          this.setState({
+            friendList: data.data
+          });
+        else if (status === 1)
+          this.setState({
+            pendList: data.data
+          });
+      });
+  };
+
   getSearchList = async query => {
     const token = await AsyncStorage.getItem("token");
 
@@ -55,11 +88,33 @@ export default class SearchPage extends Component {
         });
       });
   };
+  componentDidMount() {
+    this.getFriendList(3);
 
+    this.getFriendList(1);
+  }
+  reload = () => {
+    this.getFriendList(3);
+
+    this.getFriendList(1);
+    this.setState({ refreshing: false });
+  };
+  _onRefresh = onRefresh => {
+    this.setState({ refreshing: true });
+    this.reload();
+  };
   render() {
     //console.log(this.props);
     return (
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this._onRefresh}
+          />
+        }
+      >
         <View
           style={{
             height: 50,
@@ -109,10 +164,14 @@ export default class SearchPage extends Component {
             <FriendList
               listName={"Pending List"}
               navigation={this.props.navigation}
+              list={this.state.pendList}
+              reload={this.reload}
             />
             <FriendList
               listName={"Friends List"}
               navigation={this.props.navigation}
+              list={this.state.friendList}
+              reload={this.reload}
             />
           </View>
         )}
